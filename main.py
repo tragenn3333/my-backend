@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import Base, engine
+from database import Base, engine
 from app.routers import auth, users, properties, visits
 
 # Creates tables if they don't exist (fine for dev; use Alembic migrations later for production)
