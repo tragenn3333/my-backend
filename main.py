@@ -17,10 +17,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(properties.router)
-app.include_router(visits.router)
 
 
 @app.get("/")
