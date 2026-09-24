@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime, date, time
 from typing import Optional
-from app.models import UserRole, PropertyType, PropertyStatus, VisitStatus
+from models import UserRole, PropertyType, PropertyStatus, VisitStatus
 
 
 # ---- User ----
