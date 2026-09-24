@@ -4,9 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import Property, PropertyType, PropertyStatus, User
+from models import Property, PropertyType, PropertyStatus, User, Visit
 from schemas import PropertyCreate, PropertyOut
 from auth import require_admin
+from routes_photos import PhotoBlob
 
 router = APIRouter(prefix="/properties", tags=["Properties"])
 
@@ -87,6 +88,11 @@ def delete_property(
     prop = db.query(Property).filter(Property.id == property_id).first()
     if not prop:
         raise HTTPException(status_code=404, detail="Property not found")
+    # Remove this property's visit bookings first; otherwise the database refuses the delete.
+    db.query(Visit).filter(Visit.property_id == property_id).delete()
+    photo_ids = [photo.id for photo in prop.photos]
+    if photo_ids:
+        db.query(PhotoBlob).filter(PhotoBlob.photo_id.in_(photo_ids)).delete(synchronize_session=False)
     db.delete(prop)
     db.commit()
     return Response(status_code=204)

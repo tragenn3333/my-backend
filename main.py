@@ -6,6 +6,7 @@ import models  # noqa: F401  (needed so the tables get created)
 from routes_auth import router as auth_router
 from routes_properties import router as properties_router
 from routes_visits import router as visits_router
+from routes_photos import router as photos_router
 
 
 # Creates tables if they don't exist (fine for dev; use Alembic migrations later for production)
@@ -24,6 +25,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(properties_router)
 app.include_router(visits_router)
+app.include_router(photos_router)
 
 
 @app.get("/")

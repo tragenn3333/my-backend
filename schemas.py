@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime, date, time
-from typing import Optional
+from typing import List, Optional
 from models import UserRole, PropertyType, PropertyStatus, VisitStatus
 
 
@@ -44,6 +44,15 @@ class PropertyCreate(BaseModel):
     area: Optional[float] = None
 
 
+class PhotoOut(BaseModel):
+    id: int
+    url: str
+    is_primary: bool
+
+    class Config:
+        from_attributes = True
+
+
 class PropertyOut(BaseModel):
     id: int
     title: str
@@ -56,6 +65,7 @@ class PropertyOut(BaseModel):
     area: Optional[float]
     status: PropertyStatus
     created_at: datetime
+    photos: List[PhotoOut] = []
 
     class Config:
         from_attributes = True

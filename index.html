@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nivas – Find your next property</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14213D; --paper:#F2F4F7; --surface:#FFFFFF; --muted:#5C6678; --line:#D5DAE3;
+    --saffron:#E9A100; --saffron-ink:#7A5200; --saffron-tint:#FBF0D4;
+    --sage:#2F6F5E; --sage-tint:#E3F0EA; --danger:#B3261E; --danger-tint:#F9E3E1;
+    --font-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+    --font-body:"Public Sans","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-padding-top:80px}
+  body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.55 var(--font-body)}
+  h1,h2,h3{font-family:var(--font-display);line-height:1.15;margin:0;letter-spacing:-.01em}
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+  /* top bar */
+  .top{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+  .top .wrap{display:flex;align-items:center;gap:20px;height:64px}
+  .brand{font:700 22px var(--font-display);letter-spacing:-.02em;cursor:pointer;background:none;border:0;padding:0}
+  .brand span{color:var(--saffron)}
+  nav{display:flex;gap:4px;flex:1}
+  .navlink{background:none;border:0;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:500;color:var(--muted)}
+  .navlink:hover{color:var(--ink);background:var(--paper)}
+  .navlink[aria-current="true"]{color:var(--ink);box-shadow:inset 0 -3px 0 var(--saffron);border-radius:0}
+  #account{display:flex;align-items:center;gap:8px}
+  .who{font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* buttons */
+  .btn{background:var(--ink);color:#fff;border:1px solid var(--ink);padding:9px 16px;border-radius:6px;cursor:pointer;font-weight:600}
+  .btn:hover{background:#0c1530}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  .btn.ghost:hover{border-color:var(--ink)}
+  .btn.accent{background:var(--saffron);border-color:var(--saffron);color:var(--ink)}
+  .btn.accent:hover{background:#d19000}
+  .btn.danger{background:transparent;color:var(--danger);border-color:#e6b9b5}
+  .btn.small{padding:5px 10px;font-size:14px}
+  .btn:disabled{opacity:.55;cursor:wait}
+
+  #banner{display:none;background:var(--saffron-tint);color:var(--saffron-ink);text-align:center;padding:8px 20px;font-weight:500}
+  #banner.on{display:block}
+
+  /* hero */
+  .hero{background:var(--ink);color:#fff;padding:48px 0 0;overflow:hidden}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:end}
+  .hero h1{font-size:clamp(34px,5vw,54px);max-width:14ch}
+  .hero p{color:#C9D1E3;max-width:44ch;margin:14px 0 0}
+  .hero svg{width:100%;height:auto;display:block}
+  .hero .draw path,.hero .draw rect,.hero .draw line{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 2.2s ease forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @media (prefers-reduced-motion:reduce){.hero .draw *{animation:none;stroke-dashoffset:0}}
+  .filters{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:-1px;
+    display:grid;grid-template-columns:repeat(6,1fr) auto;gap:12px;align-items:end;position:relative;top:1px}
+  .filterbar{background:linear-gradient(var(--ink) 50%,var(--paper) 50%);padding:0 0 0}
+  label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
+  input,select,textarea{border:1px solid var(--line);border-radius:6px;padding:9px 10px;background:#fff;width:100%;color:var(--ink)}
+  textarea{resize:vertical;min-height:84px}
+
+  /* listings */
+  main{padding:32px 0 64px;min-height:50vh}
+  .head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 0 18px}
+  .head h2{font-size:26px}
+  .muted{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;cursor:pointer;text-align:left;padding:0;display:flex;flex-direction:column}
+  .card:hover{border-color:var(--ink)}
+  .thumb{position:relative;aspect-ratio:16/9;display:block;width:100%}
+  .thumb svg{width:100%;height:100%;display:block}
+  .badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:13px;font-weight:600}
+  .badge.available{background:var(--sage-tint);color:var(--sage)}
+  .badge.sold,.badge.cancelled{background:var(--danger-tint);color:var(--danger)}
+  .badge.rented,.badge.pending{background:var(--saffron-tint);color:var(--saffron-ink)}
+  .badge.confirmed{background:var(--sage-tint);color:var(--sage)}
+  .thumb .badge{position:absolute;top:10px;left:10px}
+  .card .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px}
+  .price{font:700 22px var(--font-display)}
+  .card .title{font-size:17px;font-weight:600}
+  .specs{display:flex;gap:14px;color:var(--muted);font-size:14px;flex-wrap:wrap}
+  .empty{background:var(--surface);border:1px dashed var(--line);border-radius:8px;padding:36px 20px;text-align:center;color:var(--muted)}
+
+  /* tables / lists */
+  .rows{display:flex;flex-direction:column;gap:10px}
+  .row{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .row .grow{flex:1;min-width:200px}
+  .row strong{display:block}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:28px}
+  .panel h3{font-size:19px;margin-bottom:14px}
+  .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .form-grid .wide{grid-column:1/-1}
+  .inline{display:flex;gap:8px;align-items:center}
+  .inline select{width:auto;padding:5px 8px}
+
+  /* dialogs */
+  dialog{border:0;border-radius:12px;padding:0;width:min(560px,94vw);max-height:92vh;color:var(--ink);background:var(--surface)}
+  dialog::backdrop{background:rgba(20,33,61,.55)}
+  .dlg{padding:22px}
+  .dlg-head{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:14px}
+  .dlg-head h2{font-size:24px}
+  .x{background:none;border:0;font-size:26px;line-height:1;cursor:pointer;padding:0 4px;color:var(--muted)}
+  .tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+  .tab{background:none;border:0;padding:8px 14px;cursor:pointer;font-weight:600;color:var(--muted)}
+  .tab[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 -3px 0 var(--saffron)}
+  .stack{display:flex;flex-direction:column;gap:14px}
+  .err{color:var(--danger);font-weight:500;min-height:1.2em;margin:0}
+  #detail .thumb{border-radius:8px;overflow:hidden;margin-bottom:14px}
+  #detail .price{font-size:28px}
+  .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:14px 0}
+  .kv div{background:var(--paper);border-radius:6px;padding:8px 10px}
+  .kv small{display:block;color:var(--muted)}
+  .book{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}
+  .book .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  .thumb img.ph{width:100%;height:100%;object-fit:cover;display:block;background:var(--paper)}
+  .gallery{margin-bottom:14px}
+  .gallery .thumb{border-radius:8px;overflow:hidden;margin-bottom:8px}
+  .strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+  .tn{border:2px solid transparent;border-radius:6px;padding:0;background:none;cursor:pointer;flex:0 0 72px;height:52px;overflow:hidden}
+  .tn:hover{border-color:var(--saffron)}
+  .tn img{width:100%;height:100%;object-fit:cover;display:block}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:14px 0}
+  .pitem{border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+  .pitem img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+  .pitem .acts{display:flex;gap:6px;padding:8px;flex-wrap:wrap;align-items:center}
+  .pnote{font-size:14px;color:var(--muted)}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:8px;z-index:50;display:none;max-width:90vw}
+  #toast.on{display:block}
+  #toast.bad{background:var(--danger)}
+
+  @media (max-width:900px){
+    .filters{grid-template-columns:repeat(2,1fr)}
+    .hero .wrap{grid-template-columns:1fr}
+    .hero svg{display:none}
+    .form-grid{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:560px){
+    .top .wrap{height:auto;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+    nav{order:3;width:100%;flex:none}
+    .form-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ SETTINGS: your backend address ============ -->
+<script>
+  const API = "https://my-backend-zgda.onrender.com";
+</script>
+
+<header class="top">
+  <div class="wrap">
+    <button class="brand" data-go="listings" aria-label="Nivas home">Niva<span>s</span></button>
+    <nav id="nav" aria-label="Main"></nav>
+    <div id="account"></div>
+  </div>
+</header>
+<div id="banner" role="status"></div>
+
+<div id="heroSlot"></div>
+<main><div class="wrap" id="app"></div></main>
+
+<dialog id="detail" aria-label="Property details"><div class="dlg" id="detailBody"></div></dialog>
+<dialog id="auth" aria-label="Log in or create account"><div class="dlg" id="authBody"></div></dialog>
+<dialog id="photos" aria-label="Manage photos"><div class="dlg" id="photosBody"></div></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const inr = n => new Intl.NumberFormat("en-IN", {style:"currency", currency:"INR", maximumFractionDigits:0}).format(n);
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch { return null; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch {} },
+  del(k){ try { localStorage.removeItem(k); } catch {} }
+};
+const TYPES = ["apartment","house","plot","commercial"];
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const fmtDate = d => new Date(d + "T00:00:00").toLocaleDateString("en-IN", {weekday:"short", day:"numeric", month:"short", year:"numeric"});
+const fmtTime = t => String(t).slice(0,5);
+const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+
+const state = { token: store.get("nivas_token"), user: null, view: "listings", filters: {status:"available"}, skip: 0, hasMore: false, list: [], cache: {} };
+const PAGE = 12;
+
+let toastTimer;
+function toast(msg, bad = false){
+  const t = $("#toast"); t.textContent = msg; t.className = "on" + (bad ? " bad" : "");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = "", 4200);
+}
+
+function errText(data, status){
+  if (data && typeof data.detail === "string") return data.detail;
+  if (data && Array.isArray(data.detail)) return data.detail.map(d => (d.loc ? d.loc[d.loc.length-1] + ": " : "") + d.msg).join(". ");
+  return "Something went wrong (error " + status + "). Try again.";
+}
+
+/* ---------- API ---------- */
+async function api(path, opts = {}){
+  const headers = {};
+  if (state.token) headers.Authorization = "Bearer " + state.token;
+  let body;
+  if (opts.form){ headers["Content-Type"] = "application/x-www-form-urlencoded"; body = new URLSearchParams(opts.form); }
+  else if (opts.json){ headers["Content-Type"] = "application/json"; body = JSON.stringify(opts.json); }
+  else if (opts.formData){ body = opts.formData; }
+  const wake = setTimeout(() => { const b = $("#banner"); b.textContent = "Waking up the server. The first request can take up to a minute."; b.classList.add("on"); }, 3500);
+  let res;
+  try { res = await fetch(API + path, {method: opts.method || "GET", headers, body}); }
+  catch { throw new Error("Cannot reach the server. Check your internet connection and try again."); }
+  finally { clearTimeout(wake); $("#banner").classList.remove("on"); }
+  if (res.status === 204) return null;
+  const data = await res.json().catch(() => null);
+  if (!res.ok){
+    if (res.status === 401 && state.token){ logout(); throw new Error("Your session expired. Log in again."); }
+    throw new Error(errText(data, res.status));
+  }
+  return data;
+}
+
+/* ---------- house drawings (no photos needed) ---------- */
+function thumb(type, id){
+  const tints = ["#E4ECF7","#E3F0EA","#FBF0D4","#ECE8F4"];
+  const bg = tints[id % 4], ink = "#14213D", acc = "#E9A100";
+  const s = `fill="none" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"`;
+  let art = "";
+  if (type === "apartment"){
+    let w = "";
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) w += `<rect x="${118 + c*28}" y="${34 + r*26}" width="16" height="14" ${s}/>`;
+    art = `<rect x="104" y="22" width="112" height="116" ${s}/>${w}<rect x="150" y="112" width="20" height="26" fill="${acc}" stroke="${ink}" stroke-width="2.5"/>`;
+  } else if (type === "house"){
+    art = `<path d="M96 84 L160 34 L224 84" ${s}/><rect x="108" y="84" width="104" height="54" ${s}/><rect x="150" y="104" width="20" height="34" fill="${acc}" stroke="${ink}" stroke-width="2.5"/><rect x="120" y="98" width="20" height="18" ${s}/><rect x="180" y="98" width="20" height="18" ${s}/>`;
+  } else if (type === "plot"){
+    art = `<path d="M86 132 L128 76 L232 76 L262 132 Z" ${s} stroke-dasharray="7 6"/><circle cx="86" cy="132" r="5" fill="${acc}" stroke="${ink}" stroke-width="2"/><circle cx="128" cy="76" r="5" fill="${acc}" stroke="${ink}" stroke-width="2"/><circle cx="232" cy="76" r="5" fill="${acc}" stroke="${ink}" stroke-width="2"/><circle cx="262" cy="132" r="5" fill="${acc}" stroke="${ink}" stroke-width="2"/>`;
+  } else {
+    art = `<rect x="70" y="52" width="180" height="86" ${s}/><path d="M70 52 L250 52 L242 72 L78 72 Z" fill="${acc}" stroke="${ink}" stroke-width="2.5"/><rect x="86" y="88" width="56" height="50" ${s}/><rect x="178" y="88" width="56" height="50" ${s}/><line x1="160" y1="88" x2="160" y2="138" ${s}/>`;
+  }
+  return `<svg viewBox="0 0 320 180" role="img" aria-label="${esc(cap(type))} illustration" preserveAspectRatio="xMidYMid slice"><rect width="320" height="180" fill="${bg}"/><line x1="0" y1="138" x2="320" y2="138" stroke="${ink}" stroke-width="2.5"/>${art}</svg>`;
+}
+
+/* ---------- photos ---------- */
+const photoSrc = ph => API + ph.url;
+const sortedPhotos = p => [...(p.photos || [])].sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || a.id - b.id);
+function cover(p){
+  const ph = sortedPhotos(p)[0];
+  return ph ? `<img class="ph" src="${esc(photoSrc(ph))}" alt="${esc(p.title)}" loading="lazy">` : thumb(p.property_type, p.id);
+}
+// Shrinks a photo in the browser (max 1280px, JPEG) so uploads are small and quick.
+async function shrink(file, max = 1280, quality = 0.82){
+  let bmp;
+  try { bmp = await createImageBitmap(file); }
+  catch { throw new Error("\"" + file.name + "\" could not be read. Use a JPG or PNG photo."); }
+  const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  const blob = await new Promise(res => c.toBlob(res, "image/jpeg", quality));
+  if (!blob) throw new Error("\"" + file.name + "\" could not be prepared for upload.");
+  return blob;
+}
+async function uploadPhotos(propertyId, files, onProgress){
+  for (let i = 0; i < files.length; i++){
+    if (onProgress) onProgress(i + 1, files.length);
+    const fd = new FormData();
+    fd.append("file", await shrink(files[i]), "photo.jpg");
+    await api(`/properties/${propertyId}/photos`, {method: "POST", formData: fd});
+  }
+  delete state.cache[propertyId];
+}
+
+/* ---------- shell ---------- */
+function renderNav(){
+  const links = [["listings","Properties"]];
+  if (state.user) links.push(["visits","My visits"]);
+  if (state.user && state.user.role === "admin") links.push(["manage","Manage"]);
+  $("#nav").innerHTML = links.map(([v,l]) => `<button class="navlink" data-go="${v}" aria-current="${state.view === v}">${l}</button>`).join("");
+  $("#account").innerHTML = state.user
+    ? `<span class="who" title="${esc(state.user.email)}">${esc(state.user.name)}</span><button class="btn ghost small" data-act="logout">Log out</button>`
+    : `<button class="btn ghost small" data-act="login">Log in</button><button class="btn small" data-act="signup">Create account</button>`;
+}
+
+function heroHTML(){
+  return `<section class="hero"><div class="wrap">
+    <div><h1>Find your next property</h1><p>Browse apartments, houses, plots and shops. Book a visit in a minute.</p></div>
+    <svg class="draw" viewBox="0 0 420 200" fill="none" stroke="#E9A100" stroke-width="2.5" stroke-linejoin="round" aria-hidden="true">
+      <line x1="0" y1="199" x2="420" y2="199"/><rect x="24" y="90" width="70" height="109"/><rect x="110" y="40" width="90" height="159"/>
+      <path d="M222 120 L272 76 L322 120 V199 H222 Z"/><rect x="338" y="110" width="66" height="89"/>
+    </svg></div></section>`;
+}
+
+/* ---------- views ---------- */
+async function go(view){
+  state.view = view; renderNav();
+  $("#heroSlot").innerHTML = view === "listings" ? heroHTML() : "";
+  if (view === "listings") return viewListings();
+  if (view === "visits") return viewVisits();
+  if (view === "manage") return viewManage();
+}
+
+function filterBar(){
+  const f = state.filters;
+  return `<div class="filterbar"><div class="wrap"><form class="filters" id="filterForm">
+    <label class="f">Location<input name="location" value="${esc(f.location || "")}" placeholder="City or area"></label>
+    <label class="f">Type<select name="property_type"><option value="">Any</option>${TYPES.map(t => `<option value="${t}" ${f.property_type === t ? "selected" : ""}>${cap(t)}</option>`).join("")}</select></label>
+    <label class="f">Min price (₹)<input name="min_price" type="number" min="0" value="${esc(f.min_price || "")}"></label>
+    <label class="f">Max price (₹)<input name="max_price" type="number" min="0" value="${esc(f.max_price || "")}"></label>
+    <label class="f">Bedrooms (min)<input name="bedrooms" type="number" min="0" value="${esc(f.bedrooms || "")}"></label>
+    <label class="f">Status<select name="status">${[["available","Available"],["","Any"],["sold","Sold"],["rented","Rented"]].map(([v,l]) => `<option value="${v}" ${(f.status ?? "") === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+    <div class="inline"><button class="btn accent" type="submit">Search</button><button class="btn ghost" type="button" data-act="reset">Reset</button></div>
+  </form></div></div>`;
+}
+
+function cardHTML(p){
+  return `<button class="card" data-open="${p.id}"><span class="thumb">${cover(p)}<span class="badge ${p.status}">${cap(p.status)}</span></span>
+    <span class="body"><span class="price">${inr(p.price)}</span><span class="title">${esc(p.title)}</span><span class="muted">${esc(p.location)}</span>
+    <span class="specs"><span>${cap(p.property_type)}</span>${p.property_type === "plot" ? "" : `<span>${p.bedrooms} bed</span><span>${p.bathrooms} bath</span>`}${p.area ? `<span>${p.area} sq ft</span>` : ""}</span></span></button>`;
+}
+
+async function viewListings(){
+  $("#app").innerHTML = `${""}<div class="head"><h2>Properties</h2><span class="muted" id="count"></span></div><div id="results"><p class="muted">Loading properties…</p></div><div style="text-align:center;margin-top:22px" id="more"></div>`;
+  // filter bar sits between hero and list
+  $("#heroSlot").insertAdjacentHTML("beforeend", filterBar());
+  await loadListings(true);
+}
+
+async function loadListings(reset){
+  if (reset){ state.skip = 0; state.list = []; }
+  const q = new URLSearchParams();
+  Object.entries(state.filters).forEach(([k,v]) => { if (v !== "" && v != null) q.set(k, v); });
+  q.set("skip", state.skip); q.set("limit", PAGE);
+  try {
+    const rows = await api("/properties?" + q.toString());
+    rows.forEach(p => state.cache[p.id] = p);
+    state.list = state.list.concat(rows);
+    state.hasMore = rows.length === PAGE; state.skip += rows.length;
+    const box = $("#results"); if (!box) return;
+    box.innerHTML = state.list.length
+      ? `<div class="grid">${state.list.map(cardHTML).join("")}</div>`
+      : `<div class="empty">No properties match these filters. Widen the price range or clear the location.</div>`;
+    $("#count").textContent = state.list.length + (state.hasMore ? "+" : "") + " shown";
+    $("#more").innerHTML = state.hasMore ? `<button class="btn ghost" data-act="more">Show more</button>` : "";
+  } catch (e){ const box = $("#results"); if (box) box.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+
+async function propertyById(id){
+  if (!state.cache[id]) state.cache[id] = await api("/properties/" + id);
+  return state.cache[id];
+}
+
+/* property detail + booking */
+async function openDetail(id){
+  const p = await propertyById(id);
+  const canBook = p.status === "available";
+  const photos = sortedPhotos(p);
+  const gallery = photos.length
+    ? `<div class="gallery"><span class="thumb" id="mainPhoto"><img class="ph" src="${esc(photoSrc(photos[0]))}" alt="${esc(p.title)}"></span>${photos.length > 1 ? `<div class="strip">${photos.map((ph, i) => `<button type="button" class="tn" data-photo="${esc(photoSrc(ph))}" aria-label="Show photo ${i + 1}"><img src="${esc(photoSrc(ph))}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}</div>`
+    : `<span class="thumb">${thumb(p.property_type, p.id)}</span>`;
+  $("#detailBody").innerHTML = `
+    <div class="dlg-head"><h2>${esc(p.title)}</h2><button class="x" data-close="detail" aria-label="Close">×</button></div>
+    ${gallery}
+    <div class="price">${inr(p.price)} <span class="badge ${p.status}" style="vertical-align:middle;font-size:14px">${cap(p.status)}</span></div>
+    <div class="muted">${esc(p.location)}</div>
+    <div class="kv"><div><small>Type</small>${cap(p.property_type)}</div>
+      ${p.property_type === "plot" ? "" : `<div><small>Bedrooms</small>${p.bedrooms}</div><div><small>Bathrooms</small>${p.bathrooms}</div>`}
+      ${p.area ? `<div><small>Area</small>${p.area} sq ft</div>` : ""}</div>
+    ${p.description ? `<p>${esc(p.description)}</p>` : ""}
+    <div class="book">${!canBook ? `<p class="muted">This property is ${p.status}, so visits are closed.</p>` :
+      state.user ? `<form id="bookForm" class="stack"><h3>Book a visit</h3><div class="two">
+        <label class="f">Date<input type="date" name="d" min="${today()}" required></label>
+        <label class="f">Time<input type="time" name="t" required></label></div>
+        <p class="err" id="bookErr"></p><button class="btn accent" type="submit">Book visit</button></form>`
+      : `<button class="btn accent" data-act="login-book">Log in to book a visit</button>`}</div>`;
+  $("#detail").showModal();
+  const form = $("#bookForm");
+  if (form) form.onsubmit = async e => {
+    e.preventDefault(); const btn = form.querySelector("button"); btn.disabled = true; $("#bookErr").textContent = "";
+    try {
+      await api("/visits", {method:"POST", json:{property_id: p.id, visit_date: form.d.value, visit_time: form.t.value}});
+      $("#detail").close(); toast("Visit booked. Track it under My visits.");
+    } catch (er){ $("#bookErr").textContent = er.message; btn.disabled = false; }
+  };
+}
+
+/* my visits */
+async function viewVisits(){
+  $("#app").innerHTML = `<div class="head"><h2>My visits</h2></div><div id="vlist"><p class="muted">Loading your visits…</p></div>`;
+  try {
+    const visits = await api("/visits/my");
+    if (!visits.length){ $("#vlist").innerHTML = `<div class="empty">You have no visits yet. Open a property and book one.</div>`; return; }
+    await Promise.all([...new Set(visits.map(v => v.property_id))].map(id => propertyById(id).catch(() => null)));
+    $("#vlist").innerHTML = `<div class="rows">${visits.map(v => {
+      const p = state.cache[v.property_id];
+      return `<div class="row"><div class="grow"><strong>${esc(p ? p.title : "Property #" + v.property_id)}</strong><span class="muted">${p ? esc(p.location) + " · " : ""}${fmtDate(v.visit_date)} at ${fmtTime(v.visit_time)}</span></div>
+        <span class="badge ${v.status}">${cap(v.status)}</span>
+        ${v.status !== "cancelled" ? `<button class="btn danger small" data-cancel="${v.id}">Cancel visit</button>` : ""}</div>`;
+    }).join("")}</div>`;
+  } catch (e){ $("#vlist").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+
+/* admin */
+async function viewManage(){
+  if (!state.user || state.user.role !== "admin"){ $("#app").innerHTML = `<div class="empty">Only admins can manage properties.</div>`; return; }
+  $("#app").innerHTML = `
+    <div class="panel"><h3>Add a property</h3>
+      <form id="addForm" class="form-grid">
+        <label class="f wide">Title<input name="title" required placeholder="3 BHK apartment near Gomti Nagar"></label>
+        <label class="f">Price (₹)<input name="price" type="number" min="0" step="any" required></label>
+        <label class="f">Location<input name="location" required></label>
+        <label class="f">Type<select name="property_type">${TYPES.map(t => `<option value="${t}">${cap(t)}</option>`).join("")}</select></label>
+        <label class="f">Bedrooms<input name="bedrooms" type="number" min="0" value="0"></label>
+        <label class="f">Bathrooms<input name="bathrooms" type="number" min="0" value="0"></label>
+        <label class="f">Area (sq ft)<input name="area" type="number" min="0" step="any"></label>
+        <label class="f wide">Description<textarea name="description"></textarea></label>
+        <label class="f wide">Photos (optional, up to 10)<input name="photos" type="file" accept="image/*" multiple></label>
+        <div class="wide"><p class="err" id="addErr"></p><button class="btn" type="submit">Add property</button></div>
+      </form></div>
+    <div class="head"><h2>All properties</h2></div><div id="mprops"><p class="muted">Loading…</p></div>
+    <div class="head" style="margin-top:32px"><h2>Visit requests</h2></div><div id="mvisits"><p class="muted">Loading…</p></div>`;
+  $("#addForm").onsubmit = async e => {
+    e.preventDefault(); const f = e.target, btn = f.querySelector("button"); btn.disabled = true; $("#addErr").textContent = "";
+    const body = {title:f.title.value.trim(), price:+f.price.value, location:f.location.value.trim(), property_type:f.property_type.value,
+      bedrooms:+f.bedrooms.value || 0, bathrooms:+f.bathrooms.value || 0, description:f.description.value.trim() || null, area:f.area.value ? +f.area.value : null};
+    const files = [...f.photos.files].slice(0, 10);
+    try {
+      const p = await api("/properties", {method:"POST", json:body}); state.cache[p.id] = p;
+      if (files.length){
+        try { await uploadPhotos(p.id, files, (n, total) => btn.textContent = `Uploading photo ${n} of ${total}…`); }
+        catch (er){ toast("Property added, but a photo failed: " + er.message + " Use Photos on the list below to retry.", true); }
+      }
+      f.reset(); toast("Property added."); loadManageLists();
+    } catch (er){ $("#addErr").textContent = er.message; } finally { btn.disabled = false; btn.textContent = "Add property"; }
+  };
+  loadManageLists();
+}
+
+async function loadManageLists(){
+  try {
+    const props = await api("/properties?limit=100"); props.forEach(p => state.cache[p.id] = p);
+    $("#mprops").innerHTML = props.length ? `<div class="rows">${props.map(p => `<div class="row"><div class="grow"><strong>${esc(p.title)}</strong><span class="muted">${esc(p.location)} · ${inr(p.price)}</span></div>
+      <label class="inline">Status <select data-pstatus="${p.id}">${["available","sold","rented"].map(s => `<option ${p.status === s ? "selected" : ""} value="${s}">${cap(s)}</option>`).join("")}</select></label>
+      <button class="btn ghost small" data-photos="${p.id}">Photos (${(p.photos || []).length})</button>
+      <button class="btn danger small" data-del="${p.id}">Delete</button></div>`).join("")}</div>` : `<div class="empty">No properties yet. Add your first one above.</div>`;
+  } catch (e){ $("#mprops").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+  try {
+    const visits = await api("/visits");
+    await Promise.all([...new Set(visits.map(v => v.property_id))].map(id => propertyById(id).catch(() => null)));
+    $("#mvisits").innerHTML = visits.length ? `<div class="rows">${visits.map(v => { const p = state.cache[v.property_id];
+      return `<div class="row"><div class="grow"><strong>${esc(p ? p.title : "Property #" + v.property_id)}</strong><span class="muted">Customer #${v.user_id} · ${fmtDate(v.visit_date)} at ${fmtTime(v.visit_time)}</span></div>
+      <label class="inline">Status <select data-vstatus="${v.id}">${["pending","confirmed","cancelled"].map(s => `<option ${v.status === s ? "selected" : ""} value="${s}">${cap(s)}</option>`).join("")}</select></label></div>`; }).join("")}</div>`
+      : `<div class="empty">No visit requests yet.</div>`;
+  } catch (e){ $("#mvisits").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+
+/* ---------- photo manager (admin) ---------- */
+let pmId = null;
+async function openPhotoManager(id){
+  pmId = id; delete state.cache[id];
+  const p = await propertyById(id);
+  const photos = sortedPhotos(p);
+  $("#photosBody").innerHTML = `
+    <div class="dlg-head"><h2>Photos</h2><button class="x" data-close="photos" aria-label="Close">×</button></div>
+    <p class="muted" style="margin:0">${esc(p.title)}</p>
+    ${photos.length ? `<div class="pgrid">${photos.map(ph => `<div class="pitem"><img src="${esc(photoSrc(ph))}" alt="Photo of ${esc(p.title)}">
+      <div class="acts">${ph.is_primary ? `<span class="badge available">Cover</span>` : `<button class="btn ghost small" data-cover="${ph.id}">Make cover</button>`}<button class="btn danger small" data-photodel="${ph.id}">Delete</button></div></div>`).join("")}</div>`
+      : `<div class="empty" style="margin:14px 0">No photos yet. Add some below.</div>`}
+    <div class="stack"><label class="f">Add photos<input type="file" id="pmFile" accept="image/*" multiple></label>
+      <p class="err" id="pmErr"></p><button class="btn accent" data-act="pm-upload" id="pmBtn">Upload photos</button>
+      <p class="pnote">JPG or PNG. Photos are shrunk automatically before upload. The cover photo shows on the property card.</p></div>`;
+  if (!$("#photos").open) $("#photos").showModal();
+}
+async function refreshPM(){ if (pmId){ await openPhotoManager(pmId); loadManageLists(); } }
+
+/* ---------- auth ---------- */
+function openAuth(mode = "login", afterId = null){
+  state.afterAuth = afterId;
+  $("#authBody").innerHTML = `
+    <div class="dlg-head"><h2>Welcome to Nivas</h2><button class="x" data-close="auth" aria-label="Close">×</button></div>
+    <div class="tabs" role="tablist"><button class="tab" role="tab" data-tab="login" aria-selected="${mode === "login"}">Log in</button><button class="tab" role="tab" data-tab="signup" aria-selected="${mode === "signup"}">Create account</button></div>
+    <form id="authForm" class="stack">
+      ${mode === "signup" ? `<label class="f">Full name<input name="name" required autocomplete="name"></label>` : ""}
+      <label class="f">Email<input name="email" type="email" required autocomplete="email"></label>
+      <label class="f">Password<input name="password" type="password" required minlength="6" autocomplete="${mode === "login" ? "current-password" : "new-password"}"></label>
+      <p class="err" id="authErr"></p>
+      <button class="btn" type="submit">${mode === "login" ? "Log in" : "Create account"}</button>
+    </form>`;
+  $("#auth").showModal();
+  $("#authForm").onsubmit = async e => {
+    e.preventDefault(); const f = e.target, btn = f.querySelector('button[type="submit"]'); btn.disabled = true; $("#authErr").textContent = "";
+    try {
+      if (mode === "signup") await api("/auth/register", {method:"POST", json:{name:f.name.value.trim(), email:f.email.value.trim(), password:f.password.value}});
+      const tok = await api("/auth/login", {method:"POST", form:{username:f.email.value.trim(), password:f.password.value}});
+      state.token = tok.access_token; store.set("nivas_token", state.token);
+      state.user = await api("/auth/me");
+      $("#auth").close(); toast("Welcome, " + state.user.name + ".");
+      renderNav();
+      if (state.afterAuth) openDetail(state.afterAuth); else go(state.view);
+    } catch (er){ $("#authErr").textContent = er.message; btn.disabled = false; state.token = state.user ? state.token : null; }
+  };
+}
+
+function logout(){
+  state.token = null; state.user = null; store.del("nivas_token");
+  renderNav(); if (state.view !== "listings") go("listings"); else renderNav();
+}
+
+/* ---------- events ---------- */
+let currentDetail = null;
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-go],[data-act],[data-open],[data-close],[data-tab],[data-cancel],[data-del],[data-photo],[data-photos],[data-cover],[data-photodel]");
+  if (!t) return;
+  if (t.dataset.go) return go(t.dataset.go);
+  if (t.dataset.open){ currentDetail = +t.dataset.open; return openDetail(currentDetail).catch(er => toast(er.message, true)); }
+  if (t.dataset.close) return $("#" + t.dataset.close).close();
+  if (t.dataset.tab) return openAuth(t.dataset.tab, state.afterAuth);
+  if (t.dataset.photo){ const img = $("#mainPhoto img"); if (img) img.src = t.dataset.photo; return; }
+  if (t.dataset.photos) return openPhotoManager(+t.dataset.photos).catch(er => toast(er.message, true));
+  if (t.dataset.cover){ try { await api(`/photos/${t.dataset.cover}/primary`, {method:"PATCH"}); await refreshPM(); toast("Cover photo updated."); } catch (er){ toast(er.message, true); } return; }
+  if (t.dataset.photodel){
+    if (!confirm("Delete this photo?")) return;
+    try { await api(`/photos/${t.dataset.photodel}`, {method:"DELETE"}); await refreshPM(); toast("Photo deleted."); } catch (er){ toast(er.message, true); }
+    return;
+  }
+  const act = t.dataset.act;
+  if (act === "pm-upload"){
+    const files = [...($("#pmFile").files || [])];
+    if (!files.length){ $("#pmErr").textContent = "Choose at least one photo first."; return; }
+    const btn = $("#pmBtn"); btn.disabled = true; $("#pmErr").textContent = "";
+    try { await uploadPhotos(pmId, files, (n, total) => btn.textContent = `Uploading ${n} of ${total}…`); toast("Photos uploaded."); await refreshPM(); }
+    catch (er){ $("#pmErr").textContent = er.message; btn.disabled = false; btn.textContent = "Upload photos"; }
+    return;
+  }
+  if (act === "login") return openAuth("login");
+  if (act === "signup") return openAuth("signup");
+  if (act === "login-book"){ $("#detail").close(); return openAuth("login", currentDetail); }
+  if (act === "logout"){ logout(); return toast("You are logged out."); }
+  if (act === "reset"){ state.filters = {status:"available"}; return go("listings"); }
+  if (act === "more") return loadListings(false);
+  if (t.dataset.cancel){
+    if (!confirm("Cancel this visit?")) return;
+    try { await api("/visits/" + t.dataset.cancel + "/cancel", {method:"PATCH"}); toast("Visit cancelled."); viewVisits(); } catch (er){ toast(er.message, true); }
+  }
+  if (t.dataset.del){
+    if (!confirm("Delete this property, its photos and its visit bookings? This cannot be undone.")) return;
+    try { await api("/properties/" + t.dataset.del, {method:"DELETE"}); delete state.cache[t.dataset.del]; toast("Property deleted."); loadManageLists(); } catch (er){ toast(er.message, true); }
+  }
+});
+
+document.addEventListener("submit", e => {
+  if (e.target.id !== "filterForm") return;
+  e.preventDefault();
+  const f = new FormData(e.target); state.filters = {};
+  for (const [k,v] of f.entries()) state.filters[k] = v;
+  loadListings(true);
+});
+
+document.addEventListener("change", async e => {
+  const t = e.target;
+  try {
+    if (t.dataset.pstatus){ await api(`/properties/${t.dataset.pstatus}/status?status=${t.value}`, {method:"PATCH"}); delete state.cache[t.dataset.pstatus]; toast("Property marked " + t.value + "."); }
+    if (t.dataset.vstatus){ await api(`/visits/${t.dataset.vstatus}/status?status=${t.value}`, {method:"PATCH"}); toast("Visit marked " + t.value + "."); }
+  } catch (er){ toast(er.message, true); loadManageLists(); }
+});
+
+["detail","auth","photos"].forEach(id => $("#" + id).addEventListener("click", e => { if (e.target.id === id) e.target.close(); }));
+
+/* ---------- start ---------- */
+(async function init(){
+  renderNav();
+  if (state.token){
+    try { state.user = await api("/auth/me"); } catch { state.token = null; store.del("nivas_token"); }
+  }
+  go("listings");
+})();
+</script>
+</body>
+</html>
