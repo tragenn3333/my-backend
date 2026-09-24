@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import Base, engine
+import models  # noqa: F401  (needed so the tables get created)
 
 
 # Creates tables if they don't exist (fine for dev; use Alembic migrations later for production)
@@ -18,7 +19,11 @@ app.add_middleware(
 )
 
 
-
 @app.get("/")
 def root():
     return {"status": "Real Estate API is running"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
